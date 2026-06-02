@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioAura | Editor & Planos</title>
+    <style>
+        :root {
+            --bg-primary: #0F172A;
+            --bg-panel: #1E293B;
+            --accent: #6366F1;
+            --accent-hover: #4F46E5;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --premium-color: #10B981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--bg-panel);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo { font-weight: bold; font-size: 1.2rem; }
+        .logo span { color: var(--accent); }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover { color: var(--text-main); }
+
+        .btn-save {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Container Principal do Editor */
+        .editor-container {
+            display: flex;
+            height: calc(100vh - 65px);
+            overflow: hidden;
+        }
+
+        /* Painel de Edição (Esquerda) */
+        .edit-panel {
+            width: 45%;
+            background-color: var(--bg-panel);
+            padding: 2rem;
+            overflow-y: auto;
+            border-right: 1px solid #334155;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--bg-primary);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .input-group input:focus { border-color: var(--accent); }
+
+        .color-pickers { display: flex; gap: 1rem; }
+        .color-field { flex: 1; }
+        .color-field input[type="color"] { padding: 0; height: 40px; cursor: pointer; }
+
+        /* Painel de Visualização (Direita) */
+        .preview-panel {
+            width: 55%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #0b0f19;
+            padding: 2rem;
+        }
+
+        /* Mockup do Celular */
+        .phone-mockup {
+            width: 320px;
+            height: 560px;
+            background-color: #ffffff;
+            border: 10px solid #334155;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            color: #000000;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .user-avatar {
+            width: 90px;
+            height: 90px;
+            background: #cbd5e1;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+        }
+
+        .user-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.2rem; text-align: center; }
+        .user-bio { font-size: 0.9rem; text-align: center; margin-bottom: 2rem; opacity: 0.8; }
+        .user-links { width: 100%; display: flex; flex-direction: column; gap: 1rem; }
+        
+        .user-link-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #000000;
+            color: #ffffff;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: transform 0.2s;
+        }
+        .user-link-btn:hover { transform: scale(1.02); }
+
+        /* SEÇÃO DE PREÇOS (MODAL SEPARADO OU ROLÁVEL) */
+        .pricing-section {
+            background-color: #0b0f19;
+            padding: 5rem 2rem;
+            text-align: center;
+            border-top: 1px solid #334155;
+        }
+
+        .pricing-title { font-size: 2.5rem; margin-bottom: 1rem; }
+        .pricing-subtitle { color: var(--text-muted); margin-bottom: 3rem; }
+
+        .plans-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .plan-card {
+            background-color: var(--bg-panel);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            flex: 1;
+            min-width: 280px;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            transition: transform 0.3s;
+        }
+
+        .plan-card:hover { transform: translateY(-5px); }
+        .plan-card.pro { border-color: var(--accent); }
+        
+        .badge {
+            position: absolute;
+            top: -12px;
+            background-color: var(--accent);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .plan-name { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .plan-price { font-size: 2.5rem; font-weight: bold; margin-bottom: 1.5rem; }
+        .plan-price span { font-size: 1rem; color: var(--text-muted); }
+
+        .plan-features {
+            list-style: none;
+            width: 100%;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .plan-features li {
+            margin-bottom: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .plan-features li::before {
+            content: "✓";
+            color: var(--premium-color);
+            font-weight: bold;
+        }
+
+        .plan-btn {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-free { background-color: #334155; color: white; }
+        .btn-pro { background-color: var(--accent); color: white; }
+        .btn-pro:hover { background-color: var(--accent-hover); }
+
+        @media (max-width: 768px) {
+            .editor-container { flex-direction: column; height: auto; overflow: auto; }
+            .edit-panel, .preview-panel { width: 100%; height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Bio<span>Aura</span></div>
+        <div class="nav-links">
+            <a href="#">Editor</a>
+            <a href="#precos">Preços</a>
+        </div>
+        <button class="btn-save">Publicar Site</button>
+    </header>
+
+    <div class="editor-container">
+        <div class="edit-panel">
+            <h2 class="section-title">1. Informações Básicas</h2>
+            <div class="input-group">
+                <label for="input-name">Nome do Profissional</label>
+                <input type="text" id="input-name" value="Seu Nome Aqui">
+            </div>
+            <div class="input-group">
+                <label for="input-bio">Biografia Curta</label>
+                <textarea id="input-bio" rows="3">Fotógrafa apaixonada por capturar momentos reais.</textarea>
+            </div>
+
+            <h2 class="section-title">2. Aparência & Cores</h2>
+            <div class="input-group color-pickers">
+                <div class="color-field">
+                    <label for="color-bg">Fundo</label>
+                    <input type="color" id="color-bg" value="#ffffff">
+                </div>
+                <div class="color-field">
+                    <label for="color-text">Texto</label>
+                    <input type="color" id="color-text" value="#0F172A">
+                </div>
+                <div class="color-field">
+                    <label for="color-btn">Botões</label>
+                    <input type="color" id="color-btn" value="#6366F1">
+                </div>
+            </div>
+
+            <h2 class="section-title">3. Seus Links</h2>
+            <div class="input-group">
+                <label for="link-1-text">Texto do Botão 1</label>
+                <input type="text" id="link-1-text" value="Ver meu Portfólio">
+            </div>
+            <div class="input-group">
+                <label for="link-2-text">Texto do Botão 2</label>
+                <input type="text" id="link-2-text" value="Falar no WhatsApp">
+            </div>
+        </div>
+
+        <div class="preview-panel">
+            <div class="phone-mockup" id="phone">
+                <div class="user-avatar">📸</div>
+                <div class="user-name" id="view-name">Seu Nome Aqui</div>
+                <div class="user-bio" id="view-bio">Fotógrafa apaixonada por capturar momentos reais.</div>
+                <div class="user-links">
+                    <a href="#" class="user-link-btn" id="view-link-1">Ver meu Portfólio</a>
+                    <a href="#" class="user-link-btn" id="view-link-2">Falar no WhatsApp</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="pricing-section" id="precos">
+        <h2 class="pricing-title">Planos simples para acelerar seu negócio</h2>
+        <p class="pricing-subtitle">Comece de graça e mude para o Pro quando precisar de recursos avançados.</p>
+
+        <div class="plans-container">
+            <div class="plan-card">
+                <h3 class="plan-name">Plano Free</h3>
+                <div class="plan-price">R$ 0<span>/sempre</span></div>
+                <ul class="plan-features">
+                    <li>1 Página de Portfólio</li>
+                    <li>Até 5 links estruturados</li>
+                    <li>Domínio bioaura.com/seu-nome</li>
+                    <li>Marca d'água no rodapé</li>
+                </ul>
+                <button class="plan-btn btn-free">Começar Agora</button>
+            </div>
+
+            <div class="plan-card pro">
+                <div class="badge">Mais Popular</div>
+                <h3 class="plan-name">BioAura Pro</h3>
+                <div class="plan-price">R$ 19<span>/mês</span></div>
+                <ul class="plan-features">
+                    <li>Páginas ilimitadas</li>
+                    <li>Conectar seu Domínio (.com.br)</li>
+                    <li>Remover marca d'água</li>
+                    <li>Estatísticas de cliques e acessos</li>
+                    <li>Pixel do Facebook e Google Analytics</li>
+                </ul>
+                <button class="plan-btn btn-pro">Assinar Plano Pro</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Scripts do Editor Dinâmico
+        const inputName = document.getElementById('input-name');
+        const inputBio = document.getElementById('input-bio');
+        const colorBg = document.getElementById('color-bg');
+        const colorText = document.getElementById('color-text');
+        const colorBtn = document.getElementById('color-btn');
+        const link1Text = document.getElementById('link-1-text');
+        const link2Text = document.getElementById('link-2-text');
+
+        const viewName = document.getElementById('view-name');
+        const viewBio = document.getElementById('view-bio');
+        const phone = document.getElementById('phone');
+        const viewLink1 = document.getElementById('view-link-1');
+        const viewLink2 = document.getElementById('view-link-2');
+
+        inputName.addEventListener('input', () => { viewName.textContent = inputName.value; });
+        inputBio.addEventListener('input', () => { viewBio.textContent = inputBio.value; });
+        link1Text.addEventListener('input', () => { viewLink1.textContent = link1Text.value; });
+        link2Text.addEventListener('input', () => { viewLink2.textContent = link2Text.value; });
+
+        colorBg.addEventListener('input', () => { phone.style.backgroundColor = colorBg.value; });
+        colorText.addEventListener('input', () => { phone.style.color = colorText.value; });
+        colorBtn.addEventListener('input', () => {
+            viewLink1.style.backgroundColor = colorBtn.value;
+            viewLink2.style.backgroundColor = colorBtn.value;
+            
+            const hex = colorBtn.value.replace('#', '');
+            const r = parseInt(hex.substr(0,2),16);
+            const g = parseInt(hex.substr(2,2),16);
+            const b = parseInt(hex.substr(4,2),16);
+            const brightness = ((r*299)+(g*587)+(b*114))/1000;
+            const btnTextColor = brightness > 155 ? '#000000' : '#ffffff';
+            viewLink1.style.color = btnTextColor;
+            viewLink2.style.color = btnTextColor;
+        });
+
+        phone.style.backgroundColor = colorBg.value;
+        phone.style.color = colorText.value;
+        viewLink1.style.backgroundColor = colorBtn.value;
+        viewLink2.style.backgroundColor = colorBtn.value;
+    </script>
+</body>
+</html>
